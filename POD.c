@@ -32,46 +32,47 @@ void POD_Init(void){
     MIDI_SendProgramChange (Prog_Pos);  // Ponemos el POD en el programa almacenado
 }
 
-
-
+//! Controla el modo afinación "Tuner Mode".
+/*!
+    \param status TRUE para activar el modo afinación, FALSE para desactivarlo.
+*/
 void SetTunerMode(bool status){
-    if (status){ // TUNER MODE: ON
+    if (status){        // TUNER MODE: ON
         LED_BUTTON = 0;
         TunerMode = true;
         UP_HoldTime = 0;
         // Mostramos color Naranja
-        LED_MIDI_IN = 1;
-        LED_MIDI_OUT = 1;
-    }else{       // TUNER MODE: OFF
+        LED_RED = 1;
+        LED_GREEN = 1;
+    }else{              // TUNER MODE: OFF
         TunerMode = false;
         _delay(ReleaseDelay/4);
-        /* TODO: Estudiar poner delays al entrar y salir de los programas
-         *       especiales, ya que el POD tiene un pequeño retraso al cambiar
-         *       de, y a, estos programas.
-         */
+
         // Dejamos de mostrar el color Naranja
-        LED_MIDI_IN = 0;
-        LED_MIDI_OUT = 0;
+        LED_RED = 0;
+        LED_GREEN = 0;
     }
 }
 
+//! Controla el modo manual "Manual Mode".
+/*!
+    \param status TRUE para activar el modo manual, FALSE para desactivarlo.
+*/
 void SetManualMode(bool status){
-    if (status){ // MANUAL MODE: ON
+    if (status){        // MANUAL MODE: ON
         ManualMode = true;
         DOWN_HoldTime = 0;
         // Mostramos color Violeta
-        LED_MIDI_OUT = 1;
-        LED_BUTTON = 1;
-    }else{       // MANUAL MODE: OFF
+        LED_RED = 1;
+        LED_BLUE = 1;
+    }else{              // MANUAL MODE: OFF
         ManualMode = false;
         _delay(ReleaseDelay/4);
         // Dejamos de mostrar el color Violeta
-        LED_MIDI_OUT = 0;
-        LED_BUTTON = 0;
+        LED_RED = 0;
+        LED_BLUE = 0;
     }
 }
-
-
 
 //! Envía los bytes "Program Change" y el programa deseado, y actualiza el valor en la EEPROM.
 /*!
@@ -88,7 +89,6 @@ void MIDI_SendProgramChange (unsigned char prg){
         putch(Prog_Pos);
     }
 
-
    // No almacenamos los programas especiales en EEPROM.
     if ((prg != MIDI_Tuner) && (prg != MIDI_Manual))
         EEPROM_WRITE (Prog_Pos_Dir, Prog_Pos); // Almacenamos el cambio en la EEPROM
@@ -98,18 +98,23 @@ void MIDI_SendProgramChange (unsigned char prg){
         LED_MIDI_OUT = 0;
 }
 
+//!    Maneja los mensajes MIDI recibidos:
 void MIDI_receiveProgramChange(){
     if (RCIF){
         unsigned char inChar = getch();
         if (inChar == MIDI_PChange){
             inChar = getch();
-            if (inChar <= nProgs + 1){ // nProgs + 1 porque queremos incluir el programa MIDI_Tuner
+           
+            if (inChar <= nProgs + 1){
+            // 'nProgs + 1' porque queremos incluir el programa MIDI_Tuner
                 LED_MIDI_IN = 1;
                 // No almacenamos los programas especiales en EEPROM.
                 if ((inChar != MIDI_Tuner) && (inChar != MIDI_Manual)){
                     Prog_Pos = inChar;
-                    EEPROM_WRITE (Prog_Pos_Dir, Prog_Pos); // Almacenamos el cambio en la EEPROM
-                    if (TunerMode) // Al recibir un cambio de programa salimos de los modos especiales
+                    // Almacenamos el cambio en la EEPROM
+                    EEPROM_WRITE (Prog_Pos_Dir, Prog_Pos);
+                    // Al recibir un cambio de programa salimos de los modos especiales
+                    if (TunerMode)
                         SetTunerMode(false);
                     if (ManualMode)
                         SetManualMode(false);
@@ -124,6 +129,30 @@ void MIDI_receiveProgramChange(){
                 if (!TunerMode)
                     LED_MIDI_IN = 0;
             }
+            /*
+             * Usar el Switch devuelve un error "Cant generate code" justo en la
+             * línea "switch(inChar){".
+            switch(inChar){
+                case MIDI_Tuner:
+                    SetTunerMode(true);
+                    break;
+                case MIDI_Manual:
+                    SetManualMode(true);
+                    break;
+                default:
+                    if (inChar <= nProgs){
+                        Prog_Pos = inChar;
+                        // Almacenamos el cambio en la EEPROM
+                        EEPROM_WRITE (Prog_Pos_Dir, Prog_Pos);
+                        // Al recibir un cambio de programa salimos de los modos especiales
+                        if (TunerMode)
+                            SetTunerMode(false);
+                        if (ManualMode)
+                            SetManualMode(false);
+                    }
+            }
+            */
+            
         }
     }
 }

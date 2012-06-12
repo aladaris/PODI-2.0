@@ -24,12 +24,17 @@ const unsigned char MIDI_Manual = 0x00;   //!< Valor MIDI para el programa Manua
 const unsigned char MIDI_Tuner = 0x25;    //!< Valor MIDI para el programa Tuner.
 const unsigned char MIDI_PChange = 0xC0;  //!< Comando MIDI "Program Change" para el canal 1.
 
+    // Mapeo Pin de cada color (TODO: Comprobar asignación)
+#define LED_RED RC4
+#define LED_GREEN RC3
+#define LED_BLUE RC2
+
     // Mapeo de PINes
 #define B_UP    RC0       //!< Botón UP mapeado al pin C0.
 #define B_DOWN  RC1       //!< Botón DOWN mapeado al pin C1.
-#define LED_BUTTON RC2    //!< Led que indica que un botón es presionado.
-#define LED_MIDI_IN RC3   //!< Led que indica actividad MIDI IN.
-#define LED_MIDI_OUT RC4  //!< Led que indica actividad MIDI OUT.
+#define LED_BUTTON LED_BLUE    //!< Led que indica que un botón es presionado.
+#define LED_MIDI_IN LED_GREEN   //!< Led que indica actividad MIDI IN.
+#define LED_MIDI_OUT LED_RED  //!< Led que indica actividad MIDI OUT.
 
 ////////////////////////
 // VARIABLES GLOBALES //
